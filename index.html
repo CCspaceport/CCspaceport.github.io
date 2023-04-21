@@ -184,74 +184,21 @@
       
       
       
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Computer-Vision//" class="article-tag-list-link color1">Computer Vision</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
 
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2023/03/01/%E3%80%90CV%E3%80%91%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-【CV】实现肺部区域提取" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2023/03/01/%E3%80%90CV%E3%80%91%E5%AE%9E%E7%8E%B0%E8%82%BA%E9%83%A8%E5%8C%BA%E5%9F%9F%E6%8F%90%E5%8F%96/">计算机视觉</a>
-    </h1>
-  
-
-        
-        <a href="/2023/03/01/%E3%80%90CV%E3%80%91%E5%AE%9E%E7%8E%B0%E8%82%BA%E9%83%A8%E5%8C%BA%E5%9F%9F%E6%8F%90%E5%8F%96/" class="archive-article-date">
-  	<time datetime="2023-02-28T16:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2023-03-01</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="连通分量标记-闭运算实现肺部区域提取"><a href="#连通分量标记-闭运算实现肺部区域提取" class="headerlink" title="连通分量标记+闭运算实现肺部区域提取"></a>连通分量标记+闭运算实现肺部区域提取</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">import cv2</span><br><span class="line">import matplotlib.pyplot as plt</span><br><span class="line">import numpy as np</span><br><span class="line">from skimage import measure</span><br><span class="line">import operator</span><br><span class="line"></span><br><span class="line">img = cv2.imread(&quot;chest.png&quot;)</span><br><span class="line">img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)</span><br><span class="line"></span><br><span class="line"># 二值化</span><br><span class="line">img[img&lt;80]=0</span><br><span class="line">img[img&gt;=80]=255</span><br><span class="line"></span><br><span class="line"># 图像反转</span><br><span class="line">img=255-img</span><br><span class="line"></span><br><span class="line"># 连通分量标记，返回标记图像和连通分量的个数</span><br><span class="line">rst_labels, num_labels=measure.label(img,connectivity=2,return_num=True)</span><br><span class="line"># print(num_labels)</span><br><span class="line"></span><br><span class="line"># 基于连通分量标记结果，提取每个分量的属性</span><br><span class="line">props=measure.regionprops(rst_labels)</span><br><span class="line"></span><br><span class="line"># 对每个连通分量按area从大到小排序</span><br><span class="line">props=sorted(props,key=operator.itemgetter(&#x27;area&#x27;),reverse=True)</span><br><span class="line"># 选择所需区域</span><br><span class="line">rst=np.zeros_like(img)</span><br><span class="line">rst[rst_labels==props[1].label]=255</span><br><span class="line">rst[rst_labels==props[2].label]=255</span><br><span class="line"></span><br><span class="line"># 设置卷积核</span><br><span class="line">kernel=cv2.getStructuringElement(0, (25,25)) #25的大小比较符合老师给的图像</span><br><span class="line"># 图像闭运算</span><br><span class="line">res=cv2.morphologyEx(rst, cv2.MORPH_CLOSE, kernel)</span><br><span class="line"></span><br><span class="line">cv2.imwrite(&#x27;mask.png&#x27;, res)</span><br><span class="line"></span><br><span class="line">plt.figure()</span><br><span class="line">plt.imshow(res,&#x27;gray&#x27;)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
-
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2023/03/01/%E3%80%90CV%E3%80%91%E5%AE%9E%E7%8E%B0%E8%82%BA%E9%83%A8%E5%8C%BA%E5%9F%9F%E6%8F%90%E5%8F%96/">展开全文 >></a>
         </p>
       
 
@@ -317,10 +264,96 @@
       
       
       
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Computer-Vision//" class="article-tag-list-link color1">Computer Vision</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
 
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2023/03/01/%E3%80%90CV%E3%80%91%E5%9F%BA%E4%BA%8E%E5%BD%B1%E5%83%8F%E7%BB%84%E5%AD%A6%E7%89%B9%E5%BE%81%E7%9A%84%E8%82%BA%E7%BB%93%E8%8A%82%E8%89%AF%E6%81%B6%E6%80%A7%E4%BA%8C%E5%88%86%E7%B1%BB/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-【CV】实现肺部区域提取" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2023/03/01/%E3%80%90CV%E3%80%91%E5%AE%9E%E7%8E%B0%E8%82%BA%E9%83%A8%E5%8C%BA%E5%9F%9F%E6%8F%90%E5%8F%96/">计算机视觉</a>
+    </h1>
+  
+
+        
+        <a href="/2023/03/01/%E3%80%90CV%E3%80%91%E5%AE%9E%E7%8E%B0%E8%82%BA%E9%83%A8%E5%8C%BA%E5%9F%9F%E6%8F%90%E5%8F%96/" class="archive-article-date">
+  	<time datetime="2023-02-28T16:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2023-03-01</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="连通分量标记-闭运算实现肺部区域提取"><a href="#连通分量标记-闭运算实现肺部区域提取" class="headerlink" title="连通分量标记+闭运算实现肺部区域提取"></a>连通分量标记+闭运算实现肺部区域提取</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">import cv2</span><br><span class="line">import matplotlib.pyplot as plt</span><br><span class="line">import numpy as np</span><br><span class="line">from skimage import measure</span><br><span class="line">import operator</span><br><span class="line"></span><br><span class="line">img = cv2.imread(&quot;chest.png&quot;)</span><br><span class="line">img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)</span><br><span class="line"></span><br><span class="line"># 二值化</span><br><span class="line">img[img&lt;80]=0</span><br><span class="line">img[img&gt;=80]=255</span><br><span class="line"></span><br><span class="line"># 图像反转</span><br><span class="line">img=255-img</span><br><span class="line"></span><br><span class="line"># 连通分量标记，返回标记图像和连通分量的个数</span><br><span class="line">rst_labels, num_labels=measure.label(img,connectivity=2,return_num=True)</span><br><span class="line"># print(num_labels)</span><br><span class="line"></span><br><span class="line"># 基于连通分量标记结果，提取每个分量的属性</span><br><span class="line">props=measure.regionprops(rst_labels)</span><br><span class="line"></span><br><span class="line"># 对每个连通分量按area从大到小排序</span><br><span class="line">props=sorted(props,key=operator.itemgetter(&#x27;area&#x27;),reverse=True)</span><br><span class="line"># 选择所需区域</span><br><span class="line">rst=np.zeros_like(img)</span><br><span class="line">rst[rst_labels==props[1].label]=255</span><br><span class="line">rst[rst_labels==props[2].label]=255</span><br><span class="line"></span><br><span class="line"># 设置卷积核</span><br><span class="line">kernel=cv2.getStructuringElement(0, (25,25)) #25的大小比较符合老师给的图像</span><br><span class="line"># 图像闭运算</span><br><span class="line">res=cv2.morphologyEx(rst, cv2.MORPH_CLOSE, kernel)</span><br><span class="line"></span><br><span class="line">cv2.imwrite(&#x27;mask.png&#x27;, res)</span><br><span class="line"></span><br><span class="line">plt.figure()</span><br><span class="line">plt.imshow(res,&#x27;gray&#x27;)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Computer-Vision//" class="article-tag-list-link color1">Computer Vision</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2023/03/01/%E3%80%90CV%E3%80%91%E5%AE%9E%E7%8E%B0%E8%82%BA%E9%83%A8%E5%8C%BA%E5%9F%9F%E6%8F%90%E5%8F%96/">展开全文 >></a>
         </p>
       
 
@@ -394,10 +427,175 @@
       
       
       
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Computer-Vision//" class="article-tag-list-link color1">Computer Vision</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
 
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2023/03/01/%E3%80%90CV%E3%80%91%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%9D%87%E8%A1%A1%E5%8C%96%E7%AD%89%E7%81%B0%E5%BA%A6%E5%80%BC%E5%8F%98%E6%8D%A2/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-【CV】转灰度图_resize_HIS转化" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2023/02/01/%E3%80%90CV%E3%80%91%E8%BD%AC%E7%81%B0%E5%BA%A6%E5%9B%BE_resize_HIS%E8%BD%AC%E5%8C%96/">计算机视觉</a>
+    </h1>
+  
+
+        
+        <a href="/2023/02/01/%E3%80%90CV%E3%80%91%E8%BD%AC%E7%81%B0%E5%BA%A6%E5%9B%BE_resize_HIS%E8%BD%AC%E5%8C%96/" class="archive-article-date">
+  	<time datetime="2023-01-31T16:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2023-02-01</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="转灰度图-resize-HIS转化"><a href="#转灰度图-resize-HIS转化" class="headerlink" title="转灰度图_resize_HIS转化"></a>转灰度图_resize_HIS转化</h1><h3 id="1、转化为灰度图，然后保存为-png-格式"><a href="#1、转化为灰度图，然后保存为-png-格式" class="headerlink" title="1、转化为灰度图，然后保存为 .png 格式"></a>1、转化为灰度图，然后保存为 .png 格式</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># coding=utf8</span><br><span class="line">import cv2 as cv</span><br><span class="line"> </span><br><span class="line"># 读入彩色图片</span><br><span class="line">img = cv.imread(&#x27;data/origin_img.png&#x27;)</span><br><span class="line"> </span><br><span class="line"># 使用 OpenCV 库中的 cvtColor 函数转换作为最终灰度</span><br><span class="line">gray_img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)</span><br><span class="line"> </span><br><span class="line"># 通过 imshow 显示图片</span><br><span class="line">cv.imshow(&quot;origin_img&quot;, img)</span><br><span class="line">cv.imshow(&quot;gray_img&quot;, gray_img)</span><br><span class="line">cv.waitKey(0)</span><br><span class="line"> </span><br><span class="line"># 保存图片为 .png 格式</span><br><span class="line">cv.imwrite(&#x27;data/gray_img.png&#x27;, gray_img)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2、将图片resize为224×224大小，然后保存为-tif-格式"><a href="#2、将图片resize为224×224大小，然后保存为-tif-格式" class="headerlink" title="2、将图片resize为224×224大小，然后保存为 .tif 格式"></a>2、将图片resize为224×224大小，然后保存为 .tif 格式</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># coding=utf8</span><br><span class="line">import cv2 as cv</span><br><span class="line"> </span><br><span class="line"># 读入彩色图片</span><br><span class="line">img = cv.imread(&#x27;data/origin_img.png&#x27;)</span><br><span class="line"> </span><br><span class="line"># 设置宽度和高度</span><br><span class="line">width = 224</span><br><span class="line">height = 224</span><br><span class="line">points = (width, height)</span><br><span class="line"># resize 图片, 默认为插值法</span><br><span class="line">resize_img = cv.resize(img, points)</span><br><span class="line"> </span><br><span class="line"># 通过 imshow 显示图片</span><br><span class="line">cv.imshow(&quot;origin_img&quot;, img)</span><br><span class="line">cv.imshow(&quot;gray_img&quot;, resize_img)</span><br><span class="line">cv.waitKey(0)</span><br><span class="line"> </span><br><span class="line"># 保存图片为 .tif 格式</span><br><span class="line">cv.imwrite(&#x27;data/resize_img.tif&#x27;, resize_img)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3、实现RGB到HIS色彩空间的转化，通过-matplotlib可视化原始图像，H图像、I图像和S图像"><a href="#3、实现RGB到HIS色彩空间的转化，通过-matplotlib可视化原始图像，H图像、I图像和S图像" class="headerlink" title="3、实现RGB到HIS色彩空间的转化，通过 matplotlib可视化原始图像，H图像、I图像和S图像"></a>3、实现RGB到HIS色彩空间的转化，通过 matplotlib可视化原始图像，H图像、I图像和S图像</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"># coding=utf8</span><br><span class="line">import cv2 as cv</span><br><span class="line">import numpy as np</span><br><span class="line">import matplotlib.pyplot as plt</span><br><span class="line"> </span><br><span class="line"># 读入彩色图片</span><br><span class="line">img = cv.imread(&#x27;data/origin_img.png&#x27;)</span><br><span class="line"> </span><br><span class="line"># 保存原始图像的行列数</span><br><span class="line">row = np.shape(img)[0]</span><br><span class="line">col = np.shape(img)[1]</span><br><span class="line"># 对原始图像进行复制</span><br><span class="line">his_img = img.copy()</span><br><span class="line"># 对图像进行通道拆分</span><br><span class="line">B, G, R = cv.split(img)</span><br><span class="line"># 把通道归一化到 [0,1]</span><br><span class="line">[B, G, R] = [i / 255.0 for i in ([B, G, R])]</span><br><span class="line"> </span><br><span class="line"># 计算 I 通道</span><br><span class="line">I = (R + G + B) / 3.0</span><br><span class="line"> </span><br><span class="line"># 计算 H 通道</span><br><span class="line">H = np.zeros((row, col))</span><br><span class="line">for i in range(row):</span><br><span class="line">    den = np.sqrt((R[i] - G[i]) ** 2 + (R[i] - B[i]) * (G[i] - B[i]))</span><br><span class="line">    thetha = np.arccos(0.5 * (R[i] - B[i] + R[i] - G[i]) / den)  # 计算夹角</span><br><span class="line">    h = np.zeros(col)  # 定义临时数组</span><br><span class="line">    # den&gt;0且G&gt;=B的元素 h赋值为 thetha</span><br><span class="line">    h[B[i] &lt;= G[i]] = thetha[B[i] &lt;= G[i]]</span><br><span class="line">    # den&gt;0且G&lt;=B的元素 h赋值为 thetha</span><br><span class="line">    h[G[i] &lt; B[i]] = 2 * np.pi - thetha[G[i] &lt; B[i]]</span><br><span class="line">    # den&lt;0的元素 h赋值为0</span><br><span class="line">    h[den == 0] = 0</span><br><span class="line">    H[i] = h / (2 * np.pi)  # 弧度化后赋值给 H通道</span><br><span class="line"> </span><br><span class="line"># 计算 S 通道</span><br><span class="line">S = np.zeros((row, col))</span><br><span class="line">for i in range(row):</span><br><span class="line">    min = []</span><br><span class="line">    # 找出每组RGB值的最小值</span><br><span class="line">    for j in range(col):</span><br><span class="line">        arr = [B[i][j], G[i][j], R[i][j]]</span><br><span class="line">        min.append(np.min(arr))</span><br><span class="line">    min = np.array(min)</span><br><span class="line">    # 计算S通道</span><br><span class="line">    S[i] = 1 - min * 3 / (R[i] + B[i] + G[i])</span><br><span class="line">    # I为0的值直接赋值0</span><br><span class="line">    S[i][R[i] + B[i] + G[i] == 0] = 0</span><br><span class="line"> </span><br><span class="line"># matplotlib 显示图片</span><br><span class="line">plt.figure(figsize=(10, 5))  # 设置窗口大小</span><br><span class="line">plt.subplot(2, 2, 1), plt.title(&#x27;origin_img&#x27;)</span><br><span class="line">plt.imshow(img), plt.axis(&#x27;off&#x27;)</span><br><span class="line">plt.subplot(2, 2, 2), plt.title(&#x27;H_img&#x27;)</span><br><span class="line">plt.imshow(H, cmap=&#x27;gray&#x27;), plt.axis(&#x27;off&#x27;)</span><br><span class="line">plt.subplot(2, 2, 3), plt.title(&#x27;I_img&#x27;)</span><br><span class="line">plt.imshow(I, cmap=&#x27;gray&#x27;), plt.axis(&#x27;off&#x27;)</span><br><span class="line">plt.subplot(2, 2, 4), plt.title(&#x27;S_img&#x27;)</span><br><span class="line">plt.imshow(S, cmap=&#x27;gray&#x27;), plt.axis(&#x27;off&#x27;)</span><br><span class="line"> </span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Computer-Vision//" class="article-tag-list-link color1">Computer Vision</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2023/02/01/%E3%80%90CV%E3%80%91%E8%BD%AC%E7%81%B0%E5%BA%A6%E5%9B%BE_resize_HIS%E8%BD%AC%E5%8C%96/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-AliAli" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/06/28/AliAli/">AliAli动漫观影平台</a>
+    </h1>
+  
+
+        
+        <a href="/2022/06/28/AliAli/" class="archive-article-date">
+  	<time datetime="2022-06-28T09:55:27.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-06-28</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="AliAli"><a href="#AliAli" class="headerlink" title="AliAli"></a>AliAli</h1><p>部署于gitee 网站<a target="_blank" rel="noopener" href="https://ccspaceport.gitee.io/aliali/">观影室 (gitee.io)</a>(不用账号密码即可登录)</p>
+<p>“动漫放映室”，即动漫观影网站，可以在网站上看经典动漫电影，实时追动画，并且定制自己的动漫空间。此网页面向喜欢看动漫的用户。</p>
+<p>一共做了6张网页，分别是：登录页 、“动漫放映室”主页 、“放映室”模块页 、“动漫”内容页 、“我的主页”模块页 、“我的收藏”内容页。即一张登录页、一张主页、两张模块页、两种内容页。</p>
+<p>登录页：主要使用表单，利用css样式做了登录框，包括输入账号、密码。利用flex弹性布局，同时设置了动画帧效果，使得登录框美观简洁。登录后即进入主页。</p>
+<p>“动漫放映室”主页：包括七大部分，一是顶部的页眉导航条部分（可跳转至主页、放映室、我的主页）、二是图片轮播广告介绍部分（一共四张轮播，点击切换）、三是动漫模块分类部分（介绍各个模块，并可以点击以进入详情页）、四是主页推荐动画部分（介绍各个动画，并可以点击观看）、五是了解更多动漫资讯卡片部分（可以点击以了解更多动漫相关信息）、六是加入我们招聘卡片部分（可以点击以了解招聘信息）、七是页眉关于网站信息部分（可以点击以了解网站信息、联系我们、企业信息等）。</p>
+<p>“放映室”模块页：页眉导航条可以进行模块页跳转，内容主要利用css设置3D效果，以呈现一种房间效果，呼应“放映室”主题。房间包括room::before， room::after, room-walls, room-walls::before, room-walls::after，即包括房间的天花板、地板、中间墙壁、左侧墙壁、右侧墙壁。其中三面墙壁都是动漫电影图片。房间中写着电影名称，可以点击跳转至相应的内容页。</p>
+<p>“动漫”内容页：以动画《龙猫》为例，做内容页。可从“放映室”模块页中点击进入此内容页。播放动画的部分片段，并利用css样式做出介绍卡片，简单介绍了动画信息、内容，同时设置button按钮可以点击观看全片。</p>
+<p>“我的主页”模块页：包括五大部分，一为最上部的页眉导航条（可以实现模块页的跳转）、二为我的id信息及搜索框（显示用户的头像、用户的id名，搜索框可以对自己的关注内容直接进行检索）、三为左侧的导航卡片（可以进入内容页，包括历史记录、我的收藏、我的动态、关注列表、更多设置）、四为我的收藏夹部分（显示不同日期收藏的动漫，并有动漫卡显示动漫图片及标签，同时显示上一次的播放记录）、五为我的关注部分（关注的动漫网站）。</p>
+<p>“我的收藏”内容页：可从“我的主页”模块页进入此内容页。最顶部有选择框，可以显示和选择最喜欢的电影。中间有一个立方体模块（内立方体和外立方体），立方体每一个页面都有动漫图片（这些动漫图片都是用户收藏的动漫），当鼠标放在立方体上时，外立方体六个图片分开，显示出内立方体的六个图片。立方体不断自由旋转。内容部分即为用户收藏电影的详细信息，包括了电影封面，电影名称，推荐指数等。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/06/28/AliAli/">展开全文 >></a>
         </p>
       
 
@@ -470,77 +668,6 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2022/06/28/blog%E7%99%BB%E5%BD%95%E5%87%BA%E9%94%99%E8%A7%A3%E5%86%B3/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-AliAli" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/06/28/AliAli/">AliAli动漫观影平台</a>
-    </h1>
-  
-
-        
-        <a href="/2022/06/28/AliAli/" class="archive-article-date">
-  	<time datetime="2022-06-28T09:55:27.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-06-28</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="AliAli"><a href="#AliAli" class="headerlink" title="AliAli"></a>AliAli</h1><p>部署于gitee 网站<a target="_blank" rel="noopener" href="https://ccspaceport.gitee.io/aliali/">观影室 (gitee.io)</a>(不用账号密码即可登录)</p>
-<p>“动漫放映室”，即动漫观影网站，可以在网站上看经典动漫电影，实时追动画，并且定制自己的动漫空间。此网页面向喜欢看动漫的用户。</p>
-<p>一共做了6张网页，分别是：登录页 、“动漫放映室”主页 、“放映室”模块页 、“动漫”内容页 、“我的主页”模块页 、“我的收藏”内容页。即一张登录页、一张主页、两张模块页、两种内容页。</p>
-<p>登录页：主要使用表单，利用css样式做了登录框，包括输入账号、密码。利用flex弹性布局，同时设置了动画帧效果，使得登录框美观简洁。登录后即进入主页。</p>
-<p>“动漫放映室”主页：包括七大部分，一是顶部的页眉导航条部分（可跳转至主页、放映室、我的主页）、二是图片轮播广告介绍部分（一共四张轮播，点击切换）、三是动漫模块分类部分（介绍各个模块，并可以点击以进入详情页）、四是主页推荐动画部分（介绍各个动画，并可以点击观看）、五是了解更多动漫资讯卡片部分（可以点击以了解更多动漫相关信息）、六是加入我们招聘卡片部分（可以点击以了解招聘信息）、七是页眉关于网站信息部分（可以点击以了解网站信息、联系我们、企业信息等）。</p>
-<p>“放映室”模块页：页眉导航条可以进行模块页跳转，内容主要利用css设置3D效果，以呈现一种房间效果，呼应“放映室”主题。房间包括room::before， room::after, room-walls, room-walls::before, room-walls::after，即包括房间的天花板、地板、中间墙壁、左侧墙壁、右侧墙壁。其中三面墙壁都是动漫电影图片。房间中写着电影名称，可以点击跳转至相应的内容页。</p>
-<p>“动漫”内容页：以动画《龙猫》为例，做内容页。可从“放映室”模块页中点击进入此内容页。播放动画的部分片段，并利用css样式做出介绍卡片，简单介绍了动画信息、内容，同时设置button按钮可以点击观看全片。</p>
-<p>“我的主页”模块页：包括五大部分，一为最上部的页眉导航条（可以实现模块页的跳转）、二为我的id信息及搜索框（显示用户的头像、用户的id名，搜索框可以对自己的关注内容直接进行检索）、三为左侧的导航卡片（可以进入内容页，包括历史记录、我的收藏、我的动态、关注列表、更多设置）、四为我的收藏夹部分（显示不同日期收藏的动漫，并有动漫卡显示动漫图片及标签，同时显示上一次的播放记录）、五为我的关注部分（关注的动漫网站）。</p>
-<p>“我的收藏”内容页：可从“我的主页”模块页进入此内容页。最顶部有选择框，可以显示和选择最喜欢的电影。中间有一个立方体模块（内立方体和外立方体），立方体每一个页面都有动漫图片（这些动漫图片都是用户收藏的动漫），当鼠标放在立方体上时，外立方体六个图片分开，显示出内立方体的六个图片。立方体不断自由旋转。内容部分即为用户收藏电影的详细信息，包括了电影封面，电影名称，推荐指数等。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2022/06/28/AliAli/">展开全文 >></a>
         </p>
       
 
@@ -747,6 +874,17 @@
       
       
       
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Computer-Vision//" class="article-tag-list-link color1">Computer Vision</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
 
       
         <p class="article-more-link">
